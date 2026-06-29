@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Recruiter — Smart Candidate Ranking</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --surface2: #1a1a26;
+      --border: #2a2a3e;
+      --accent: #7c3aed;
+      --accent2: #06b6d4;
+      --accent3: #10b981;
+      --text: #f0f0ff;
+      --muted: #8888aa;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --grad: linear-gradient(135deg, #7c3aed, #06b6d4);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh
+    }
+
+    /* NAV */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(10, 10, 15, .8);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      font-weight: 800;
+      font-size: 1.2rem
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--grad);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem
+    }
+
+    .badge {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: .25rem .75rem;
+      border-radius: 20px;
+      font-size: .75rem;
+      color: var(--muted)
+    }
+
+    /* HERO */
+    .hero {
+      text-align: center;
+      padding: 4rem 2rem 2rem;
+      position: relative;
+      overflow: hidden
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(124, 58, 237, .15), transparent 70%);
+      pointer-events: none
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: .75rem
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 1.1rem;
+      max-width: 520px;
+      margin: 0 auto 2.5rem
+    }
+
+    /* STATS ROW */
+    .stats {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: .75rem 1.5rem;
+      text-align: center
+    }
+
+    .stat-num {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent
+    }
+
+    .stat-label {
+      font-size: .72rem;
+      color: var(--muted);
+      margin-top: .2rem
+    }
+
+    /* MAIN LAYOUT */
+    .main {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 1.5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 2rem 4rem
+    }
+
+    /* INPUT PANEL */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      height: fit-content;
+      position: sticky;
+      top: 80px
+    }
+
+    .panel-title {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem
+    }
+
+    .panel-title span {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      background: var(--grad)
+    }
+
+    label {
+      display: block;
+      font-size: .8rem;
+      color: var(--muted);
+      margin-bottom: .4rem;
+      margin-top: 1rem;
+      font-weight: 500
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .7rem 1rem;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: .9rem;
+      outline: none;
+      transition: .2s
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, .15)
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 120px
+    }
+
+    .row2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .75rem
+    }
+
+    .btn {
+    width: 100%;
+    margin-top: 1.2rem;
+    padding: 1.25rem;
+    border: none;
+    border-radius: 12px;
+    background: var(--grad);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.125rem;   /* Changed */
+    cursor: pointer;
+    transition: .2s;
+    position: relative;
+    overflow: hidden;
+    }
+
+    .btn:hover {
+      opacity: .9;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 25px rgba(124, 58, 237, .4)
+    }
+
+    .btn:active {
+      transform: translateY(0)
+    }
+
+    .btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      transform: none
+    }
+
+    .btn-spin {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, .3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 0 auto
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    /* SIGNAL WEIGHTS */
+    .weights {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--surface2);
+      border-radius: 10px;
+      border: 1px solid var(--border)
+    }
+
+    .weight-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: .78rem;
+      padding: .3rem 0
+    }
+
+    .weight-label {
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: .4rem
+    }
+
+    .weight-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%
+    }
+
+    .weight-val {
+      font-weight: 600;
+      font-size: .82rem
+    }
+
+    /* RESULTS */
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem
+    }
+
+    .results-title {
+      font-size: 1.1rem;
+      font-weight: 700
+    }
+
+    .results-meta {
+      font-size: .8rem;
+      color: var(--muted)
+    }
+
+    .timing {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: .3rem .8rem;
+      border-radius: 20px;
+      font-size: .75rem
+    }
+
+    .timing::before {
+      content: '⚡'
+    }
+
+    /* CANDIDATE CARD */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.4rem;
+      margin-bottom: 1rem;
+      transition: .25s;
+      position: relative;
+      overflow: hidden
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 30px rgba(124, 58, 237, .12);
+      transform: translateY(-2px)
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      background: var(--grad)
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 1rem
+    }
+
+    .candidate-info {
+      display: flex;
+      gap: .9rem;
+      align-items: center
+    }
+
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1rem;
+      flex-shrink: 0
+    }
+
+    .cname {
+      font-weight: 700;
+      font-size: 1rem
+    }
+
+    .cheadline {
+      font-size: .8rem;
+      color: var(--muted);
+      margin-top: .15rem
+    }
+
+    .cloc {
+      font-size: .75rem;
+      color: var(--muted);
+      margin-top: .2rem
+    }
+
+    .score-badge {
+      text-align: right
+    }
+
+    .grade {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1
+    }
+
+    .score-num {
+      font-size: .8rem;
+      color: var(--muted);
+      margin-top: .1rem
+    }
+
+    .rank-num {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      width: 28px;
+      height: 28px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .75rem;
+      font-weight: 700;
+      color: var(--muted)
+    }
+
+    .rank-num.gold {
+      background: rgba(245, 158, 11, .15);
+      border-color: var(--warn);
+      color: var(--warn)
+    }
+
+    .rank-num.silver {
+      background: rgba(148, 163, 184, .1);
+      border-color: #94a3b8;
+      color: #94a3b8
+    }
+
+    .rank-num.bronze {
+      background: rgba(180, 120, 60, .1);
+      border-color: #b4783c;
+      color: #b4783c
+    }
+
+    /* SKILLS */
+    .skills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+      margin-bottom: 1rem
+    }
+
+    .skill {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: .22rem .65rem;
+      border-radius: 6px;
+      font-size: .72rem;
+      color: var(--text)
+    }
+
+    .skill.match {
+      border-color: rgba(16, 185, 129, .4);
+      background: rgba(16, 185, 129, .08);
+      color: var(--accent3)
+    }
+
+    /* SIGNAL BARS */
+    .signals {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .5rem .75rem;
+      margin-bottom: 1rem
+    }
+
+    .signal {
+      display: flex;
+      flex-direction: column;
+      gap: .25rem
+    }
+
+    .sig-label {
+      font-size: .68rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between
+    }
+
+    .sig-val {
+      font-weight: 600;
+      font-size: .7rem
+    }
+
+    .bar-track {
+      height: 4px;
+      background: var(--surface2);
+      border-radius: 3px;
+      overflow: hidden
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 1s ease;
+      background: var(--grad)
+    }
+
+    .bar-fill.green {
+      background: linear-gradient(90deg, #10b981, #06b6d4)
+    }
+
+    .bar-fill.yellow {
+      background: linear-gradient(90deg, #f59e0b, #f97316)
+    }
+
+    .bar-fill.red {
+      background: linear-gradient(90deg, #ef4444, #f59e0b)
+    }
+
+    /* REASONING */
+    .reasoning {
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: .7rem .9rem;
+      font-size: .78rem;
+      color: var(--muted);
+      border-left: 2px solid var(--accent);
+      line-height: 1.6
+    }
+
+    .reasoning::before {
+      content: '🤖 ';
+      font-style: normal
+    }
+
+    /* EMPTY / LOADING */
+    .empty {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--muted)
+    }
+
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: .4
+    }
+
+    .empty p {
+      font-size: .95rem
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      color: #fff;
+      padding: .8rem 1.4rem;
+      border-radius: 12px;
+      font-size: .85rem;
+      font-weight: 600;
+      display: none;
+      z-index: 999;
+      animation: slide-up .3s ease
+    }
+
+    .toast.success {
+      background: var(--accent3)
+    }
+
+    .toast.error {
+      background: var(--danger)
+    }
+
+    @keyframes slide-up {
+      from {
+        transform: translateY(20px);
+        opacity: 0
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1
+      }
+    }
+
+    /* UPLOAD PREVIEW CARD */
+    .upload-preview {
+      margin-top: 1rem;
+      padding: .9rem 1rem;
+      background: rgba(16, 185, 129, .07);
+      border: 1px solid rgba(16, 185, 129, .3);
+      border-radius: 10px;
+      display: none
+    }
+
+    .upload-preview .up-name {
+      font-weight: 700;
+      font-size: .9rem;
+      margin-bottom: .3rem;
+      color: var(--accent3)
+    }
+
+    .upload-preview .up-meta {
+      font-size: .76rem;
+      color: var(--muted);
+      margin-bottom: .5rem
+    }
+
+    .upload-preview .up-skills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .3rem
+    }
+
+    .upload-preview .up-skill {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: .18rem .55rem;
+      border-radius: 5px;
+      font-size: .7rem;
+      color: var(--text)
+    }
+
+    .upload-box{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    margin-top:15px;
+    }
+
+    .upload-btn{
+        background:#27272a;
+        color:white;
+        border:1px solid #3f3f46;
+        border-radius:16px;
+        padding:12px 22px;
+        cursor:pointer;
+        transition:.3s;
+    }
+
+    .upload-btn:hover{
+        background:#3f3f46;
+    }
+
+    #jdFileName{
+        color:#a1a1aa;
+    }
+
+    .gradient-btn{
+        width:100%;
+        margin-top:15px;
+        padding:14px;
+        border:none;
+        border-radius:18px;
+        background:linear-gradient(90deg,#6366f1,#22d3ee);
+        color:white;
+        font-weight:600;
+        cursor:pointer;
+    }
+    .modal{
+
+      display:none;
+
+      position:fixed;
+
+      top:0;
+
+      left:0;
+
+      width:100%;
+
+      height:100%;
+
+      background:rgba(0,0,0,.7);
+
+      justify-content:center;
+
+      align-items:center;
+
+      z-index:999;
+
+    }
+
+    .modal-content{
+
+      background:#18181b;
+
+      padding:30px;
+
+      border-radius:20px;
+
+      width:600px;
+
+      color:white;
+
+    }
+
+    .card {
+    transition: all 0.25s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(99,102,241,0.25);
+    }
+
+    /* RESPONSIVE */
+    @media(max-width:900px) {
+      .main {
+        grid-template-columns: 1fr
+      }
+
+      .panel {
+        position: static
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <div class="logo">
+      <div class="logo-icon">🧠</div>
+      AI Recruiter
+    </div>
+    <div class="badge">PoC v1.0 · Local AI</div>
+  </nav>
+
+  <div class="hero">
+    <h1>Intelligent Candidate Ranking</h1>
+    <p>Paste a job description. Get a semantically ranked, signal-weighted shortlist in seconds.</p>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num" id="statCandidates">20</div>
+        <div class="stat-label">Candidates</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Ranking Signals</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">Local</div>
+        <div class="stat-label">AI Model</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="statTime">—</div>
+        <div class="stat-label">Last Run (ms)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- LEFT: INPUT PANEL -->
+    <div class="panel">
+      <div class="panel-title"><span></span>Job Description</div>
+
+      <label>Job Title</label>
+      <input id="jobTitle" type="text" placeholder="e.g. Senior ML Engineer" />
+
+      <label>Job Description</label>
+      <textarea id="jobDesc" placeholder="Paste the full job description here..."></textarea>
+
+      <hr>
+
+      <div class="upload-box">
+    <button type="button"
+            class="upload-btn"
+            onclick="document.getElementById('jdFile').click()">
+        📄 Choose File
+    </button>
+
+    <span id="jdFileName">No file chosen</span>
+
+    <input
+        type="file"
+        id="jdFile"
+        accept=".pdf,.doc,.docx,.txt"
+        hidden
+        onchange="document.getElementById('jdFileName').textContent=this.files[0]?.name || 'No file chosen';">
+</div>
+
+      <button class="w-full gradient-btn text-white font-semibold text-lg py-5 rounded-3xl" onclick="uploadJD()" >
+        Extract Job Description
+      </button>
+
+      <hr style="border-color:#3f3f46;margin:30px 0;">
+      <label>Upload Resume (PDF / DOCX)</label>
+      <div class="upload-box">
+    <button type="button"
+            class="upload-btn"
+            onclick="document.getElementById('resumeFile').click()">
+        📄 Choose File
+    </button>
+
+    <span id="resumeFileName">No file chosen</span>
+
+    <input
+        type="file"
+        id="resumeFile"
+        accept=".pdf,.doc,.docx,.pdf"
+        hidden
+        onchange="document.getElementById('resumeFileName').textContent=this.files[0]?.name || 'No file chosen';">
+</div>
+      <button class="btn" id="uploadBtn" onclick="uploadResume()">📄 Upload &amp; Parse Resume</button>
+      <div class="upload-preview" id="uploadPreview">
+        <div class="up-name" id="upName"></div>
+        <div class="up-meta" id="upMeta"></div>
+        <div class="up-skills" id="upSkills"></div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-6">
+        <div>
+          <label>Required Skills (comma separated)</label>
+          <input id="reqSkills" placeholder="Python, PyTorch, NLP" />
+        </div>
+        <div>
+          <label>Preferred Skills</label>
+          <input id="prefSkills" placeholder="Docker, MLflow" />
+        </div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label>Min Experience (yrs)</label>
+          <input id="minExp" type="number" value="3" min="0" max="30" />
+        </div>
+        <div>
+          <label>Max Experience (yrs)</label>
+          <input id="maxExp" type="number" value="8" min="0" max="30" />
+        </div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label>Seniority Level</label>
+          <select id="seniority">
+            <option value="junior">Junior</option>
+            <option value="mid" selected>Mid</option>
+            <option value="senior">Senior</option>
+            <option value="lead">Lead</option>
+          </select>
+        </div>
+        <div>
+          <label>Top K Results</label>
+          <input id="topK" type="number" value="10" min="1" max="50" />
+        </div>
+      </div>
+
+      <button class="btn" id="rankBtn" onclick="doRank()">
+        <span id="btnText">🚀 Rank Candidates</span>
+        <div class="btn-spin" id="btnSpin"></div>
+      </button>
+
+      <div class="weights" style="margin-top:1.2rem">
+        <div style="font-size:.75rem;font-weight:600;margin-bottom:.5rem;color:var(--muted)">SIGNAL WEIGHTS</div>
+        <div class="weight-row"><span class="weight-label"><span class="weight-dot"
+              style="background:#7c3aed"></span>Semantic Similarity</span><span class="weight-val">40%</span></div>
+        <div class="weight-row"><span class="weight-label"><span class="weight-dot"
+              style="background:#06b6d4"></span>Skills Match</span><span class="weight-val">25%</span></div>
+        <div class="weight-row"><span class="weight-label"><span class="weight-dot"
+              style="background:#10b981"></span>Experience Fit</span><span class="weight-val">20%</span></div>
+        <div class="weight-row"><span class="weight-label"><span class="weight-dot"
+              style="background:#f59e0b"></span>Activity Score</span><span class="weight-val">10%</span></div>
+        <div class="weight-row"><span class="weight-label"><span class="weight-dot"
+              style="background:#f472b6"></span>Seniority Fit</span><span class="weight-val">5%</span></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: RESULTS -->
+    <div id="results">
+      <div class="empty">
+        <div class="empty-icon">🎯</div>
+        <p>Fill in a job description and click <strong>Rank Candidates</strong> to see your AI-ranked shortlist.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const API = 'http://localhost:8001';
+    let candidates = [];
+
+    async function doRank() {
+      const title = document.getElementById('jobTitle').value.trim();
+      const desc = document.getElementById('jobDesc').value.trim();
+      if (!title || !desc) { showToast('Please enter a job title and description'); return; }
+
+      setLoading(true);
+      const payload = {
+        job: {
+          title,
+          description: desc,
+          required_skills: document.getElementById('reqSkills').value.split(',').map(s => s.trim()).filter(Boolean),
+          preferred_skills: document.getElementById('prefSkills').value.split(',').map(s => s.trim()).filter(Boolean),
+          min_experience_years: parseFloat(document.getElementById('minExp').value) || 0,
+          max_experience_years: parseFloat(document.getElementById('maxExp').value) || 20,
+          seniority_level: document.getElementById('seniority').value,
+        },
+        top_k: parseInt(document.getElementById('topK').value) || 10
+      };
+
+      try {
+        const res = await fetch(`${API}/rank`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        const data = await res.json();
+        renderResults(data);
+      } catch (e) {
+        showToast('Cannot reach backend. Is the server running on localhost:8001?');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function renderResults(data) {
+      candidates = data.ranked_candidates;
+      document.getElementById('statTime').textContent = data.processing_time_ms;
+      const skillsReq = document.getElementById('reqSkills').value.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+  
+      let html = `
+    <div class="results-header">
+      <div class="results-title">Results for <em>${data.job_title}</em></div>
+      <div class="results-meta">
+        ${data.ranked_candidates.length} of ${data.total_candidates_evaluated} candidates · 
+        <span class="timing">${data.processing_time_ms}ms</span>
+      </div>
+    </div>`;
+
+      data.ranked_candidates.forEach(c => {
+        const rankClass = c.rank === 1 ? 'gold' : c.rank === 2 ? 'silver' : c.rank === 3 ? 'bronze' : '';
+        const initials = c.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+        const skillsHtml = c.skills.map(s =>
+          `<span class="skill${skillsReq.includes(s.toLowerCase()) ? ' match' : ''}">${s}</span>`
+        ).join('');
+
+        const signals = [
+          { label: 'Semantic', val: c.signals.semantic_similarity },
+          { label: 'Skills', val: c.signals.skills_match },
+          { label: 'Experience', val: c.signals.experience_fit },
+          { label: 'Activity', val: c.signals.activity_score },
+          { label: 'Seniority', val: c.signals.seniority_fit },
+        ];
+        const barsHtml = signals.map(s => {
+          const cls = s.val >= 70 ? 'green' : s.val >= 45 ? 'yellow' : 'red';
+          return `<div class="signal">
+        <div class="sig-label"><span>${s.label}</span><span class="sig-val">${s.val.toFixed(0)}%</span></div>
+        <div class="bar-track"><div class="bar-fill ${cls}" style="width:${s.val}%"></div></div>
+      </div>`;
+        }).join('');
+
+        html += `
+    <div class="card" onclick="showCandidate(${c.rank-1})">
+      <div class="rank-num ${rankClass}">#${c.rank}</div>
+      <div class="card-top">
+        <div class="candidate-info">
+          <div class="avatar">${initials}</div>
+          <div>
+            <div class="cname">${c.name}</div>
+            <div class="cheadline">${c.headline}</div>
+            <div class="cloc">📍 ${c.location} · ${c.total_experience_years}y exp</div>
+          </div>
+        </div>
+        <div class="score-badge">
+          <div class="grade">${c.match_grade}</div>
+          <div class="score-num">${c.final_score.toFixed(1)} / 100</div>
+        </div>
+      </div>
+      <div class="skills">${skillsHtml}</div>
+      <div class="signals">${barsHtml}</div>
+      <div class="reasoning">${c.ai_reasoning}</div>
+    </div>`;
+      });
+
+      document.getElementById('results').innerHTML = html;
+    }
+
+    function showCandidate(index){
+
+    const c = candidates[index];
+
+    document.getElementById("mName").innerText=c.name;
+
+    document.getElementById("mHeadline").innerText=c.headline;
+
+    document.getElementById("mLocation").innerText=c.location;
+
+    document.getElementById("mExperience").innerText=
+    c.total_experience_years+" Years";
+
+    document.getElementById("mReasoning").innerText=
+    c.ai_reasoning;
+
+    document.getElementById("candidateModal").style.display="flex";
+
+    }
+
+    function closeModal(){
+
+    document.getElementById("candidateModal").style.display="none";
+
+    }
+
+    function setLoading(on) {
+      document.getElementById('rankBtn').disabled = on;
+      document.getElementById('btnText').style.display = on ? 'none' : 'block';
+      document.getElementById('btnSpin').style.display = on ? 'block' : 'none';
+    }
+
+    function showToast(msg, type = 'error') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = `toast ${type}`;
+      t.style.display = 'block';
+      setTimeout(() => t.style.display = 'none', 5000);
+    }
+
+    function refreshCandidateCount() {
+      fetch(`${API}/`).then(r => r.json()).then(d => {
+        if (d.candidates_loaded !== undefined)
+          document.getElementById('statCandidates').textContent = d.candidates_loaded;
+      }).catch(() => { });
+    }
+
+    // Load candidate count on start
+    refreshCandidateCount();
+
+    async function uploadResume() {
+    const fileInput = document.getElementById('resumeFile');
+    const btn = document.getElementById('uploadBtn');
+    const preview = document.getElementById('uploadPreview');
+
+    if (fileInput.files.length === 0) {
+      showToast('Please select a resume file first.', 'error');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Parsing...';
+    preview.style.display = 'none';
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+
+    try {
+      const response = await fetch(`${API}/upload-resume`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showToast(data.detail || 'Upload failed.', 'error');
+        return;
+      }
+
+      // ✅ Success — show parsed candidate preview
+      const c = data.candidate;
+      document.getElementById('upName').textContent =
+        `✅ ${c.name} · ${c.seniority} · ${c.experience}y exp`;
+
+      document.getElementById('upMeta').textContent =
+        `Added to ranking pool (${data.pool.uploaded} uploaded + ${data.pool.seed} seed = ${data.pool.total} total)`;
+
+      document.getElementById('upSkills').innerHTML =
+        c.skills.map(s => `<span class="up-skill">${s}</span>`).join('');
+
+      preview.style.display = 'block';
+
+      showToast(`${c.name} added to the ranking pool!`, 'success');
+      refreshCandidateCount();
+      fileInput.value = '';
+
+    } catch (err) {
+      showToast('Cannot reach backend. Is the server running on localhost:8001?', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '📄 Upload & Parse Resume';
+    }
+  }
+
+  async function uploadJD() {
+    const file = document.getElementById("jdFile").files[0];
+
+    if (!file) {
+      alert("Please select a Job Description file.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch(`${API}/upload-jd`, {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+
+      document.getElementById("jobDesc").value = data.job_description;
+      showToast("Job Description extracted successfully!", "success");
+
+    } catch (err) {
+      showToast("Failed to upload Job Description.", "error");
+    }
+  }
+  </script>
+  <div id="candidateModal" class="modal">
+
+  <div class="modal-content">
+
+  <h2 id="mName"></h2>
+
+  <p id="mHeadline"></p>
+
+  <p id="mLocation"></p>
+
+  <p id="mExperience"></p>
+
+  <p id="mReasoning"></p>
+
+  <button onclick="closeModal()">Close</button>
+
+</div>
+</div>
+</body>
+
+</html>
